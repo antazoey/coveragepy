@@ -77,10 +77,9 @@ jobs:
           #       "macos": ["arm64", "x86_64"],
           #       "windows": ["x86", "AMD64"],
           #   }
-          #   # PYVERSIONS. Available versions:
-          #   # https://github.com/actions/python-versions/blob/main/versions-manifest.json
+          #   # PYVERSIONS. Available versions: https://pypi.org/project/cibuildwheel/
           #   # PyPy versions are handled further below in the "pypy" step.
-          #   pys = ["cp38", "cp39", "cp310", "cp311", "cp312"]
+          #   pys = ["cp38", "cp39", "cp310", "cp311", "cp312", "cp313"]
           #
           #   # Some OS/arch combinations need overrides for the Python versions:
           #   os_arch_pys = {
@@ -107,43 +106,50 @@ jobs:
           - {"os": "ubuntu", "py": "cp310", "arch": "x86_64"}
           - {"os": "ubuntu", "py": "cp311", "arch": "x86_64"}
           - {"os": "ubuntu", "py": "cp312", "arch": "x86_64"}
+          - {"os": "ubuntu", "py": "cp313", "arch": "x86_64"}
           - {"os": "ubuntu", "py": "cp38", "arch": "i686"}
           - {"os": "ubuntu", "py": "cp39", "arch": "i686"}
           - {"os": "ubuntu", "py": "cp310", "arch": "i686"}
           - {"os": "ubuntu", "py": "cp311", "arch": "i686"}
           - {"os": "ubuntu", "py": "cp312", "arch": "i686"}
+          - {"os": "ubuntu", "py": "cp313", "arch": "i686"}
           - {"os": "ubuntu", "py": "cp38", "arch": "aarch64"}
           - {"os": "ubuntu", "py": "cp39", "arch": "aarch64"}
           - {"os": "ubuntu", "py": "cp310", "arch": "aarch64"}
           - {"os": "ubuntu", "py": "cp311", "arch": "aarch64"}
           - {"os": "ubuntu", "py": "cp312", "arch": "aarch64"}
+          - {"os": "ubuntu", "py": "cp313", "arch": "aarch64"}
           - {"os": "macos", "py": "cp38", "arch": "arm64", "os-version": "13"}
           - {"os": "macos", "py": "cp39", "arch": "arm64", "os-version": "13"}
           - {"os": "macos", "py": "cp310", "arch": "arm64", "os-version": "13"}
           - {"os": "macos", "py": "cp311", "arch": "arm64", "os-version": "13"}
           - {"os": "macos", "py": "cp312", "arch": "arm64", "os-version": "13"}
+          - {"os": "macos", "py": "cp313", "arch": "arm64", "os-version": "13"}
           - {"os": "macos", "py": "cp38", "arch": "x86_64", "os-version": "13"}
           - {"os": "macos", "py": "cp39", "arch": "x86_64", "os-version": "13"}
           - {"os": "macos", "py": "cp310", "arch": "x86_64", "os-version": "13"}
           - {"os": "macos", "py": "cp311", "arch": "x86_64", "os-version": "13"}
           - {"os": "macos", "py": "cp312", "arch": "x86_64", "os-version": "13"}
+          - {"os": "macos", "py": "cp313", "arch": "x86_64", "os-version": "13"}
           - {"os": "windows", "py": "cp38", "arch": "x86"}
           - {"os": "windows", "py": "cp39", "arch": "x86"}
           - {"os": "windows", "py": "cp310", "arch": "x86"}
           - {"os": "windows", "py": "cp311", "arch": "x86"}
           - {"os": "windows", "py": "cp312", "arch": "x86"}
+          - {"os": "windows", "py": "cp313", "arch": "x86"}
           - {"os": "windows", "py": "cp38", "arch": "AMD64"}
           - {"os": "windows", "py": "cp39", "arch": "AMD64"}
           - {"os": "windows", "py": "cp310", "arch": "AMD64"}
           - {"os": "windows", "py": "cp311", "arch": "AMD64"}
           - {"os": "windows", "py": "cp312", "arch": "AMD64"}
-        # [[[end]]] (checksum: 16ed28c185d540b2d9972a0217864472)
+          - {"os": "windows", "py": "cp313", "arch": "AMD64"}
+        # [[[end]]] (checksum: e0cd49f4a0028c4fdf1036e9bc843075)
       fail-fast: false
 
     steps:
       - name: "Setup QEMU"
         if: matrix.os == 'ubuntu'
-        uses: docker/setup-qemu-action@5927c834f5b4fdf503fca6f4c7eccda82949e1ee # v3.1.0
+        uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
         with:
           platforms: arm64
 
@@ -151,7 +157,7 @@ jobs:
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: "Install Python 3.8"
-        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
         with:
           # PYVERSIONS
           python-version: "3.8"
@@ -164,10 +170,11 @@ jobs:
 
       - name: "Build wheels"
         env:
-          CIBW_BUILD: ${{ matrix.py }}-*
+          CIBW_BUILD: ${{ matrix.py }}*-*
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_ENVIRONMENT: PIP_DISABLE_PIP_VERSION_CHECK=1
           CIBW_PRERELEASE_PYTHONS: True
+          CIBW_FREE_THREADED_SUPPORT: True
           CIBW_TEST_COMMAND: python -c "from coverage.tracer import CTracer; print('CTracer OK!')"
         run: |
           python -m cibuildwheel --output-dir wheelhouse
@@ -181,7 +188,7 @@ jobs:
           python -m twine check wheelhouse/*
 
       - name: "Upload wheels"
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@89ef406dd8d7e03cfd12d9e0a4a378f454709029 # v4.3.5
         with:
           name: dist-${{ env.MATRIX_ID }}
           path: wheelhouse/*.whl
@@ -195,7 +202,7 @@ jobs:
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: "Install Python 3.8"
-        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
         with:
           # PYVERSIONS
           python-version: "3.8"
@@ -219,7 +226,7 @@ jobs:
           python -m twine check dist/*
 
       - name: "Upload sdist"
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@89ef406dd8d7e03cfd12d9e0a4a378f454709029 # v4.3.5
         with:
           name: dist-sdist
           path: dist/*.tar.gz
@@ -233,7 +240,7 @@ jobs:
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: "Install PyPy"
-        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
         with:
           python-version: "pypy-3.8" # Minimum of PyPy PYVERSIONS
           cache: pip
@@ -261,7 +268,7 @@ jobs:
           python -m twine check dist/*
 
       - name: "Upload wheels"
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@89ef406dd8d7e03cfd12d9e0a4a378f454709029 # v4.3.5
         with:
           name: dist-pypy
           path: dist/*.whl
@@ -280,13 +287,19 @@ jobs:
       id-token: write
     steps:
       - name: "Download artifacts"
-        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           pattern: dist-*
           merge-multiple: true
 
+      - name: "List distributions"
+        run: |
+          ls -alR
+          echo "Number of dists, there should be 72:"
+          ls -1 coverage-* | wc -l
+
       - name: "Sign artifacts"
-        uses: sigstore/gh-action-sigstore-python@61f6a500bbfdd9a2a339cf033e5421951fbc1cd2 # v2.1.1
+        uses: sigstore/gh-action-sigstore-python@f514d46b907ebcd5bedc05145c03b69c1edd8b46 # v3.0.0
         with:
           inputs: coverage-*.*
 
@@ -295,11 +308,9 @@ jobs:
           ls -alR
 
       - name: "Upload signatures"
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@89ef406dd8d7e03cfd12d9e0a4a378f454709029 # v4.3.5
         with:
           name: signatures
           path: |
-            *.crt
-            *.sig
-            *.sigstore
+            *.sigstore.json
           retention-days: 7

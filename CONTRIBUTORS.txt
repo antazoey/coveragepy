@@ -25,6 +25,7 @@ Artem Dayneko
 Arthur Deygin
 Arthur Rio
 Asher Foa
+Ask Hjorth Larsen
 Ben Carlsson
 Ben Finney
 Benjamin Parzella
@@ -134,6 +135,7 @@ Leonardo Pistone
 Lewis Gaul
 Lex Berezhny
 Liam DeVoe
+LiuYinCarl
 Loïc Dachary
 Lorenzo Micò
 Louis Heredero
